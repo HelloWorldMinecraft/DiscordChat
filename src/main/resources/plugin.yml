@@ -1,0 +1,5 @@
+name: DiscordChat
+main: discordchat.DiscordChat
+version: 0.0.1
+author: Red~
+depends: [ MultiChat ]

@@ -1,0 +1,31 @@
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath 'com.github.jengelman.gradle.plugins:shadow:6.1.0'
+  }
+}
+
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow' 
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
+repositories {
+  maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+  maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+  jcenter()
+}
+
+dependencies {
+  compileOnly 'net.md-5:bungeecord-api:1.16-R0.4-SNAPSHOT'
+  compileOnly fileTree('lib') { include '*.jar' }
+  shadow 'net.dv8tion:JDA:+'
+}
+
+shadowJar {
+  configurations = [ project.configurations.shadow ]
+}
+
+build.dependsOn = [ "shadowJar" ]

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.HashMap;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -62,20 +63,27 @@ public class DiscordChat extends Plugin implements Listener {
 	}
 
 	public boolean isHidden(ProxiedPlayer player) {
-		return this.config.getList("hidden").contains(player.getServer().getInfo().getName());
+		return !player.hasPermission("discordchat.use");
+	}
+
+	public boolean isHiddenServer(ServerInfo server) {
+		return this.config.getList("hidden").contains(server.getName());
 	}
 
 	@EventHandler
 	public void onLogout(PlayerDisconnectEvent event) {
-		if (!isHidden(event.getPlayer())) this.channel.sendMessage(event.getPlayer().getDisplayName() + " left the game.").queue();
+		if (isHidden(event.getPlayer()) || isHiddenServer(event.getPlayer().getServer().getInfo())) return;
+		this.channel.sendMessage(event.getPlayer().getDisplayName() + " left the game.").queue();
 	}
 
 	@EventHandler
 	public void onJoinServer(ServerSwitchEvent event) {
-		if (isHidden(event.getPlayer())) {
+		if (isHidden(event.getPlayer())) return;
+
+		if (isHiddenServer(event.getPlayer().getServer().getInfo())) {
 			if (event.getFrom() != null) this.channel.sendMessage(event.getPlayer().getDisplayName() + " left the game.").queue();
 		} else {
-			if (event.getFrom() == null || config.getList("hidden").contains(event.getFrom().getName())) this.channel.sendMessage(event.getPlayer().getDisplayName() + " has joined " + event.getPlayer().getServer().getInfo().getMotd()).queue();
+			if (event.getFrom() == null || isHiddenServer(event.getFrom())) this.channel.sendMessage(event.getPlayer().getDisplayName() + " has joined " + event.getPlayer().getServer().getInfo().getMotd()).queue();
 			else this.channel.sendMessage(event.getPlayer().getDisplayName() + " has switched from " + event.getFrom().getMotd() + " to " + event.getPlayer().getServer().getInfo().getMotd()).queue();
 		}
 	}
